@@ -1,3 +1,4 @@
+
 import { ROLES } from "@/utils/constants";
 
 export const navLinks = {
@@ -5,11 +6,13 @@ export const navLinks = {
     { label: "Dashboard", to: "/admin/dashboard" },
     { label: "Students", to: "/admin/students" },
     { label: "Teachers", to: "/admin/teachers" },
+    { label: "Departments", to: "/admin/departments" },
     { label: "Courses", to: "/admin/courses" },
     { label: "Attendance", to: "/admin/attendance" },
     { label: "Results", to: "/admin/results" },
     { label: "Notices", to: "/admin/notices" },
   ],
+
   [ROLES.TEACHER]: [
     { label: "Dashboard", to: "/teacher/dashboard" },
     { label: "Courses", to: "/teacher/courses" },
@@ -17,6 +20,7 @@ export const navLinks = {
     { label: "Results", to: "/teacher/results" },
     { label: "Notices", to: "/teacher/notices" },
   ],
+
   [ROLES.STUDENT]: [
     { label: "Dashboard", to: "/student/dashboard" },
     { label: "Courses", to: "/student/courses" },

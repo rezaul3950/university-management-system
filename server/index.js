@@ -9,6 +9,9 @@ const courseRoutes = require("./routes/courseRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const resultRoutes = require("./routes/resultRoutes");
 const noticeRoutes = require("./routes/noticeRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const teacherRoutes = require("./routes/teacherRoutes");
+const departmentRoutes = require("./routes/departmentRoutes");
 
 const app = express();
 
@@ -36,6 +39,9 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/results", resultRoutes);
 app.use("/api/notices", noticeRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/teachers", teacherRoutes);
+app.use("/api/departments", departmentRoutes);
 
 console.log("All API Routes Loaded Successfully!");
 

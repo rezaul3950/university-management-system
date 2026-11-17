@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLES, ROLE_HOME } from "@/utils/constants";
@@ -14,9 +15,12 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 import AdminDashboard from "@/features/dashboard/admin/AdminDashboard";
 import TeacherDashboard from "@/features/dashboard/teacher/TeacherDashboard";
 import StudentDashboard from "@/features/dashboard/student/StudentDashboard";
+
 import StudentListPage from "@/features/students/pages/StudentListPage";
 import TeacherListPage from "@/features/teachers/pages/TeacherListPage";
+import DepartmentListPage from "@/features/departments/pages/DepartmentListPage";
 import CourseListPage from "@/features/courses/pages/CourseListPage";
+
 import AttendancePage from "@/features/attendance/pages/AttendancePage";
 import ResultsPage from "@/features/results/pages/ResultsPage";
 import NoticesPage from "@/features/notices/pages/NoticesPage";
@@ -42,6 +46,7 @@ export default function AppRouter() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="students" element={<StudentListPage />} />
               <Route path="teachers" element={<TeacherListPage />} />
+              <Route path="departments" element={<DepartmentListPage />} />
               <Route path="courses" element={<CourseListPage />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="results" element={<ResultsPage />} />

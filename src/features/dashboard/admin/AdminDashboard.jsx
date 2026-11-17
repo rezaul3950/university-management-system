@@ -1,34 +1,90 @@
 
+import { useEffect, useState } from "react";
 import PageHeader from "@/components/shared/PageHeader";
 
-const stats = [
-  {
-    title: "Total Students",
-    value: "—",
-    description: "Registered students",
-    icon: "🎓",
-  },
-  {
-    title: "Total Teachers",
-    value: "—",
-    description: "Registered teachers",
-    icon: "👨‍🏫",
-  },
-  {
-    title: "Total Courses",
-    value: "—",
-    description: "Available courses",
-    icon: "📚",
-  },
-  {
-    title: "Departments",
-    value: "—",
-    description: "Total departments",
-    icon: "🏢",
-  },
-];
+import { studentService } from "@/features/students/services/studentService";
+import { teacherService } from "@/features/teachers/services/teacherService";
+import { courseService } from "@/features/courses/services/courseService";
+import { departmentService } from "@/features/departments/services/departmentService";
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    students: "—",
+    teachers: "—",
+    courses: "—",
+    departments: "—",
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [
+          studentData,
+          teacherData,
+          courseData,
+          departmentData,
+        ] = await Promise.all([
+          studentService.getAll(),
+          teacherService.getAll(),
+          courseService.getAll(),
+          departmentService.getAll(),
+        ]);
+
+        setStats({
+          students:
+            studentData.count ?? studentData.students?.length ?? 0,
+
+          teachers:
+            teacherData.count ?? teacherData.teachers?.length ?? 0,
+
+          courses: Array.isArray(courseData.data)
+            ? courseData.data.length
+            : 0,
+
+          departments:
+            departmentData.count ??
+            departmentData.departments?.length ??
+            0,
+        });
+      } catch (error) {
+        console.error("Dashboard stats error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const statCards = [
+    {
+      title: "Total Students",
+      value: stats.students,
+      description: "Registered students",
+      icon: "🎓",
+    },
+    {
+      title: "Total Teachers",
+      value: stats.teachers,
+      description: "Registered teachers",
+      icon: "👨‍🏫",
+    },
+    {
+      title: "Total Courses",
+      value: stats.courses,
+      description: "Available courses",
+      icon: "📚",
+    },
+    {
+      title: "Departments",
+      value: stats.departments,
+      description: "Total departments",
+      icon: "🏢",
+    },
+  ];
+
   return (
     <div>
       <PageHeader
@@ -36,7 +92,6 @@ export default function AdminDashboard() {
         subtitle="Welcome to University Management System"
       />
 
-      {/* Statistics */}
       <div
         style={{
           display: "grid",
@@ -45,7 +100,7 @@ export default function AdminDashboard() {
           marginBottom: 25,
         }}
       >
-        {stats.map((item) => (
+        {statCards.map((item) => (
           <div
             key={item.title}
             style={{
@@ -73,7 +128,7 @@ export default function AdminDashboard() {
             </div>
 
             <h2 style={{ fontSize: 30, margin: "15px 0 5px" }}>
-              {item.value}
+              {loading ? "..." : item.value}
             </h2>
 
             <p
@@ -89,7 +144,6 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Quick Actions */}
       <div
         style={{
           background: "var(--color-surface)",
