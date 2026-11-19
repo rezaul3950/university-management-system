@@ -75,7 +75,9 @@ exports.createStudent = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existingUser = await User.findOne({ email: normalizedEmail });
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (existingUser) {
       return res.status(409).json({
@@ -222,6 +224,44 @@ exports.deleteStudent = async (req, res) => {
     res.json({
       success: true,
       message: "Student deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Get monthly student enrollment
+exports.getMonthlyEnrollment = async (req, res) => {
+  try {
+    const enrollment = await User.aggregate([
+      {
+        $match: {
+          role: "student",
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          totalStudents: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      enrollment,
     });
   } catch (error) {
     res.status(500).json({

@@ -11,12 +11,18 @@ const {
   createStudent,
   updateStudent,
   deleteStudent,
+  getMonthlyEnrollment,
 } = require("../controllers/studentController");
 
 // Admin only
 router.use(authMiddleware, roleMiddleware("admin"));
 
+// Student routes
 router.get("/", getAllStudents);
+
+// Monthly enrollment route (must be before /:id)
+router.get("/enrollment/monthly", getMonthlyEnrollment);
+
 router.get("/:id", getStudentById);
 router.post("/", createStudent);
 router.put("/:id", updateStudent);

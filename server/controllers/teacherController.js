@@ -211,3 +211,32 @@ exports.deleteTeacher = async (req, res) => {
     });
   }
 };
+
+// Get monthly teacher enrollment
+exports.getMonthlyEnrollment = async (req, res) => {
+  try {
+    const enrollment = await User.aggregate([
+      { $match: { role: "teacher" } },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          totalTeachers: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]);
+
+    res.json({
+      success: true,
+      enrollment,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

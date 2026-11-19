@@ -7,6 +7,9 @@ import { teacherService } from "@/features/teachers/services/teacherService";
 import { courseService } from "@/features/courses/services/courseService";
 import { departmentService } from "@/features/departments/services/departmentService";
 
+import StudentEnrollmentChart from "./components/StudentEnrollmentChart";
+import TeacherEnrollmentChart from "./components/TeacherEnrollmentChart";
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     students: "—",
@@ -92,6 +95,7 @@ export default function AdminDashboard() {
         subtitle="Welcome to University Management System"
       />
 
+      {/* Statistics Cards */}
       <div
         style={{
           display: "grid",
@@ -144,6 +148,13 @@ export default function AdminDashboard() {
         ))}
       </div>
 
+      {/* Student Enrollment Chart */}
+      <StudentEnrollmentChart />
+
+      {/* Teacher Enrollment Chart */}
+      <TeacherEnrollmentChart />
+
+      {/* Quick Overview */}
       <div
         style={{
           background: "var(--color-surface)",

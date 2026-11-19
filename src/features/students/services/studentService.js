@@ -1,3 +1,4 @@
+
 import { apiClient } from "@/services/apiClient";
 
 export const studentService = {
@@ -6,4 +7,8 @@ export const studentService = {
   create: (payload) => apiClient.post("/students", payload),
   update: (id, payload) => apiClient.put(`/students/${id}`, payload),
   remove: (id) => apiClient.delete(`/students/${id}`),
+
+  // Get monthly student enrollment
+  getMonthlyEnrollment: () =>
+    apiClient.get("/students/enrollment/monthly"),
 };
