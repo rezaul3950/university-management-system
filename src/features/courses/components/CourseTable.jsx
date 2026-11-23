@@ -20,6 +20,26 @@ export default function CourseTable({ items, onEdit, onDelete }) {
       header: "Department",
     },
     {
+      key: "status",
+      header: "Status",
+      render: (row) => (
+        <span
+          style={{
+            padding: "5px 10px",
+            borderRadius: "20px",
+            fontSize: "12px",
+            fontWeight: "600",
+            backgroundColor:
+              row.status === "inactive" ? "#fee2e2" : "#dcfce7",
+            color:
+              row.status === "inactive" ? "#b91c1c" : "#15803d",
+          }}
+        >
+          {row.status || "active"}
+        </span>
+      ),
+    },
+    {
       key: "actions",
       header: "Actions",
       render: (row) => (

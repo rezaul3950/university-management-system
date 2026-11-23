@@ -26,13 +26,19 @@ export default function DepartmentTable({
       header: "Status",
       render: (item) => (
         <span
-          className={
-            item.status === "active"
-              ? "text-green-600 font-medium"
-              : "text-red-600 font-medium"
-          }
+          style={{
+            display: "inline-block",
+            padding: "5px 10px",
+            borderRadius: "20px",
+            fontSize: "12px",
+            fontWeight: "600",
+            backgroundColor:
+              item.status === "inactive" ? "#fee2e2" : "#dcfce7",
+            color:
+              item.status === "inactive" ? "#b91c1c" : "#15803d",
+          }}
         >
-          {item.status}
+          {item.status || "active"}
         </span>
       ),
     },
@@ -40,24 +46,27 @@ export default function DepartmentTable({
       key: "actions",
       header: "Actions",
       render: (item) => (
-        <div className="flex flex-wrap gap-2">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           <button
+            type="button"
             onClick={() => onView(item)}
-            className="px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-700"
+            style={buttonStyle("#2563eb", "#1d4ed8")}
           >
             View
           </button>
 
           <button
+            type="button"
             onClick={() => onEdit(item)}
-            className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+            style={buttonStyle("#d97706", "#b45309")}
           >
             Edit
           </button>
 
           <button
+            type="button"
             onClick={() => onDelete(item)}
-            className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+            style={buttonStyle("#dc2626", "#b91c1c")}
           >
             Delete
           </button>
@@ -68,3 +77,14 @@ export default function DepartmentTable({
 
   return <Table columns={columns} data={items} />;
 }
+
+const buttonStyle = (backgroundColor, hoverColor) => ({
+  padding: "6px 12px",
+  borderRadius: "6px",
+  backgroundColor,
+  color: "white",
+  border: "none",
+  cursor: "pointer",
+  fontSize: "13px",
+  fontWeight: "500",
+});

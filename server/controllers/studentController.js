@@ -2,10 +2,20 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 
-// Get all students
+// Get all students with Search
 exports.getAllStudents = async (req, res) => {
   try {
-    const students = await User.find({ role: "student" })
+    const search = req.query.search || "";
+
+    const students = await User.find({
+      role: "student",
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { studentId: { $regex: search, $options: "i" } },
+        { department: { $regex: search, $options: "i" } },
+      ],
+    })
       .select("-password")
       .sort({ createdAt: -1 });
 
@@ -37,7 +47,10 @@ exports.getStudentById = async (req, res) => {
       });
     }
 
-    res.json({ success: true, student });
+    res.json({
+      success: true,
+      student,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,

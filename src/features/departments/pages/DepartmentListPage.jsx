@@ -1,34 +1,41 @@
 
 import { useEffect, useState } from "react";
+import PageHeader from "@/components/shared/PageHeader";
+import Loader from "@/components/ui/Loader";
 import { departmentService } from "../services/departmentService";
 import DepartmentTable from "../components/DepartmentTable";
+
+const initialForm = {
+  name: "",
+  code: "",
+  description: "",
+  status: "active",
+};
 
 export default function DepartmentListPage() {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState(null);
+  const [viewingDepartment, setViewingDepartment] = useState(null);
+  const [error, setError] = useState("");
 
-  // Search, Filter and View States
+  // Search and Filter
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [viewingDepartment, setViewingDepartment] = useState(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    code: "",
-    description: "",
-    status: "active",
-  });
+  // Form State
+  const [formData, setFormData] = useState(initialForm);
 
-  // Fetch Departments
+  // Load Departments
   const fetchDepartments = async () => {
     try {
-      setLoading(true);
+      setError("");
       const response = await departmentService.getAll();
-      setDepartments(response.departments || []);
-    } catch (error) {
-      alert(error.message || "Failed to load departments");
+      setDepartments(response?.departments || []);
+    } catch (err) {
+      setError(err.message || "Failed to load departments");
     } finally {
       setLoading(false);
     }
@@ -37,16 +44,17 @@ export default function DepartmentListPage() {
   useEffect(() => {
     fetchDepartments();
   }, []);
-   // Department Statistics
-      const totalDepartments = departments.length;
 
-      const activeDepartments = departments.filter(
-   (department) => department.status === "active"
-    ).length;
+  // Department Statistics
+  const totalDepartments = departments.length;
 
-    const inactiveDepartments = departments.filter(
-  (department) => department.status === "inactive"
-    ).length;
+  const activeDepartments = departments.filter(
+    (department) => (department.status || "active") === "active"
+  ).length;
+
+  const inactiveDepartments = departments.filter(
+    (department) => department.status === "inactive"
+  ).length;
 
   // Search and Filter Logic
   const filteredDepartments = departments.filter((department) => {
@@ -58,12 +66,12 @@ export default function DepartmentListPage() {
 
     const matchesStatus =
       statusFilter === "all" ||
-      department.status === statusFilter;
+      (department.status || "active") === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
-  // Form Change
+  // Handle Form Change
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -73,20 +81,17 @@ export default function DepartmentListPage() {
 
   // Reset Form
   const resetForm = () => {
-    setFormData({
-      name: "",
-      code: "",
-      description: "",
-      status: "active",
-    });
-
+    setFormData(initialForm);
     setEditingDepartment(null);
     setShowForm(false);
+    setError("");
   };
 
-  // Add and Update Department
+  // Add or Update Department
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSaving(true);
 
     try {
       if (editingDepartment) {
@@ -94,16 +99,16 @@ export default function DepartmentListPage() {
           editingDepartment._id,
           formData
         );
-        alert("Department updated successfully");
       } else {
         await departmentService.create(formData);
-        alert("Department created successfully");
       }
 
       resetForm();
       await fetchDepartments();
-    } catch (error) {
-      alert(error.message || "Something went wrong");
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -119,6 +124,7 @@ export default function DepartmentListPage() {
     });
 
     setShowForm(true);
+    setError("");
   };
 
   // Delete Department
@@ -130,11 +136,11 @@ export default function DepartmentListPage() {
     if (!confirmed) return;
 
     try {
+      setError("");
       await departmentService.remove(department._id);
-      alert("Department deleted successfully");
       await fetchDepartments();
-    } catch (error) {
-      alert(error.message || "Failed to delete department");
+    } catch (err) {
+      setError(err.message || "Failed to delete department");
     }
   };
 
@@ -143,333 +149,262 @@ export default function DepartmentListPage() {
     setViewingDepartment(department);
   };
 
+  // Clear Filters
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+  };
+
   return (
-    <div className="space-y-6">
+    <>
+      <PageHeader
+        title="Departments"
+        subtitle="Manage university departments"
+      />
+
       {/* Department Statistics */}
-<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
-  {/* Total Departments */}
-  <div className="rounded-lg border bg-white p-5 shadow-sm">
-    <p className="text-sm font-medium text-gray-500">
-      Total Departments
-    </p>
-    <h2 className="mt-2 text-3xl font-bold text-blue-600">
-      {totalDepartments}
-    </h2>
-  </div>
-
-  {/* Active Departments */}
-  <div className="rounded-lg border bg-white p-5 shadow-sm">
-    <p className="text-sm font-medium text-gray-500">
-      Active Departments
-    </p>
-    <h2 className="mt-2 text-3xl font-bold text-green-600">
-      {activeDepartments}
-    </h2>
-  </div>
-
-  {/* Inactive Departments */}
-  <div className="rounded-lg border bg-white p-5 shadow-sm">
-    <p className="text-sm font-medium text-gray-500">
-      Inactive Departments
-    </p>
-    <h2 className="mt-2 text-3xl font-bold text-red-600">
-      {inactiveDepartments}
-    </h2>
-  </div>
-
-</div>
-      {/* Department Details Popup */}
-      {viewingDepartment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg">
-
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-bold">
-                Department Details
-              </h2>
-
-              <button
-                onClick={() => setViewingDepartment(null)}
-                className="text-2xl text-gray-500 hover:text-black"
-                aria-label="Close details"
-              >
-                &times;
-              </button>
-            </div>
-
-            <div className="space-y-4">
-
-              <div>
-                <p className="text-sm text-gray-500">
-                  Department Name
-                </p>
-                <p className="font-semibold">
-                  {viewingDepartment.name}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">
-                  Department Code
-                </p>
-                <p className="font-semibold">
-                  {viewingDepartment.code}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">
-                  Description
-                </p>
-                <p className="font-semibold">
-                  {viewingDepartment.description || "N/A"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">
-                  Status
-                </p>
-                <span
-                  className={
-                    viewingDepartment.status === "active"
-                      ? "font-semibold text-green-600"
-                      : "font-semibold text-red-600"
-                  }
-                >
-                  {viewingDepartment.status}
-                </span>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">
-                  Created Date
-                </p>
-                <p className="font-semibold">
-                  {viewingDepartment.createdAt
-                    ? new Date(
-                        viewingDepartment.createdAt
-                      ).toLocaleDateString()
-                    : "N/A"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">
-                  Last Updated
-                </p>
-                <p className="font-semibold">
-                  {viewingDepartment.updatedAt
-                    ? new Date(
-                        viewingDepartment.updatedAt
-                      ).toLocaleDateString()
-                    : "N/A"}
-                </p>
-              </div>
-
-            </div>
-
-            <button
-              onClick={() => setViewingDepartment(null)}
-              className="mt-6 w-full rounded bg-gray-700 px-4 py-2 text-white hover:bg-gray-800"
-            >
-              Close
-            </button>
-
-          </div>
-        </div>
-      )}
-
-      {/* Page Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Departments
-          </h1>
-          <p className="text-gray-500">
-            Manage university departments
-          </p>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "16px",
+          marginBottom: "25px",
+        }}
+      >
+        <div style={cardStyle}>
+          <h3>Total Departments</h3>
+          <h2>{totalDepartments}</h2>
         </div>
 
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(true);
-          }}
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          + Add Department
-        </button>
+        <div style={cardStyle}>
+          <h3>Active Departments</h3>
+          <h2 style={{ color: "green" }}>
+            {activeDepartments}
+          </h2>
+        </div>
+
+        <div style={cardStyle}>
+          <h3>Inactive Departments</h3>
+          <h2 style={{ color: "red" }}>
+            {inactiveDepartments}
+          </h2>
+        </div>
       </div>
 
-      {/* Add and Edit Form */}
+      {/* Add Department Button */}
+      <button
+        type="button"
+        onClick={() => {
+          if (showForm) {
+            resetForm();
+          } else {
+            setFormData(initialForm);
+            setEditingDepartment(null);
+            setShowForm(true);
+          }
+        }}
+        style={{
+          marginBottom: "20px",
+          padding: "10px 18px",
+        }}
+      >
+        {showForm ? "Cancel" : "Add Department"}
+      </button>
+
+      {/* Department Form */}
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-lg border bg-white p-5"
+          style={{
+            display: "grid",
+            gap: "12px",
+            maxWidth: "400px",
+            marginBottom: "25px",
+          }}
         >
-          <h2 className="text-lg font-semibold">
-            {editingDepartment
-              ? "Edit Department"
-              : "Add New Department"}
-          </h2>
+          <input
+            type="text"
+            name="name"
+            placeholder="Department Name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
 
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Department Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Computer Science and Engineering"
-              required
-              className="w-full rounded border px-3 py-2"
-            />
-          </div>
+          <input
+            type="text"
+            name="code"
+            placeholder="Department Code"
+            value={formData.code}
+            onChange={handleChange}
+            required
+          />
 
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Department Code
-            </label>
-            <input
-              type="text"
-              name="code"
-              value={formData.code}
-              onChange={handleChange}
-              placeholder="CSE"
-              required
-              className="w-full rounded border px-3 py-2"
-            />
-          </div>
+          <textarea
+            name="description"
+            placeholder="Department Description"
+            value={formData.description}
+            onChange={handleChange}
+            rows="3"
+          />
 
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Department description"
-              rows="3"
-              className="w-full rounded border px-3 py-2"
-            />
-          </div>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            required
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Status
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full rounded border px-3 py-2"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
+          <button type="submit" disabled={saving}>
+            {saving
+              ? "Saving..."
+              : editingDepartment
+                ? "Update Department"
+                : "Save Department"}
+          </button>
 
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              {editingDepartment ? "Update" : "Save"}
-            </button>
-
-            <button
-              type="button"
-              onClick={resetForm}
-              className="rounded border px-4 py-2 hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-          </div>
+          <button type="button" onClick={resetForm}>
+            Cancel
+          </button>
         </form>
       )}
 
+      {/* Error Message */}
+      {error && (
+        <p style={{ color: "var(--color-danger)" }}>
+          {error}
+        </p>
+      )}
+
       {/* Search and Filter */}
-      <div className="rounded-lg border bg-white p-5">
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "12px",
+          marginBottom: "20px",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Search by name or code..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: "10px",
+            minWidth: "250px",
+          }}
+        />
 
-        <h2 className="mb-4 text-lg font-semibold">
-          Department Search & Filter
-        </h2>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ padding: "10px" }}
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
 
-        <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Search Department
-            </label>
-
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by name or code..."
-              className="w-full rounded border px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Filter by Status
-            </label>
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded border px-3 py-2"
-            >
-              <option value="all">All Departments</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
-          </div>
-
-        </div>
-
-        {/* Department Table */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-
-          <h2 className="text-lg font-semibold">
-            All Departments ({filteredDepartments.length})
-          </h2>
-
-          <button
-            type="button"
-            onClick={() => {
-              setSearchTerm("");
-              setStatusFilter("all");
-            }}
-            className="rounded border px-3 py-2 hover:bg-gray-100"
-          >
-            Clear Filters
-          </button>
-
-        </div>
-
-        {loading ? (
-          <p>Loading departments...</p>
-        ) : filteredDepartments.length === 0 ? (
-          <p className="rounded bg-gray-50 p-4 text-gray-500">
-            No departments found.
-          </p>
-        ) : (
-          <DepartmentTable
-            items={filteredDepartments}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
-          />
-        )}
-
+        <button
+          type="button"
+          onClick={handleClearFilters}
+          style={{ padding: "10px 16px" }}
+        >
+          Clear Filters
+        </button>
       </div>
-    </div>
+
+      {/* Department Table */}
+      <h3 style={{ marginBottom: "15px" }}>
+        All Departments ({filteredDepartments.length})
+      </h3>
+
+      {loading ? (
+        <Loader />
+      ) : (
+        <DepartmentTable
+          items={filteredDepartments}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+        />
+      )}
+
+      {/* Department Details Popup */}
+      {viewingDepartment && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              color: "#222",
+              padding: "25px",
+              borderRadius: "10px",
+              width: "100%",
+              maxWidth: "450px",
+            }}
+          >
+            <h2 style={{ marginBottom: "20px" }}>
+              Department Details
+            </h2>
+
+            <p><strong>Name:</strong> {viewingDepartment.name}</p>
+            <p><strong>Code:</strong> {viewingDepartment.code}</p>
+            <p>
+              <strong>Description:</strong>{" "}
+              {viewingDepartment.description || "N/A"}
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              {viewingDepartment.status || "active"}
+            </p>
+            <p>
+              <strong>Created:</strong>{" "}
+              {viewingDepartment.createdAt
+                ? new Date(viewingDepartment.createdAt).toLocaleDateString()
+                : "N/A"}
+            </p>
+            <p>
+              <strong>Last Updated:</strong>{" "}
+              {viewingDepartment.updatedAt
+                ? new Date(viewingDepartment.updatedAt).toLocaleDateString()
+                : "N/A"}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setViewingDepartment(null)}
+              style={{
+                marginTop: "20px",
+                padding: "10px 18px",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
+
+const cardStyle = {
+  padding: "18px",
+  borderRadius: "10px",
+  border: "1px solid var(--color-border, #ddd)",
+  backgroundColor: "var(--color-card, white)",
+};

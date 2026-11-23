@@ -37,7 +37,10 @@ exports.getTeacherById = async (req, res) => {
       });
     }
 
-    res.json({ success: true, teacher });
+    res.json({
+      success: true,
+      teacher,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -49,7 +52,14 @@ exports.getTeacherById = async (req, res) => {
 // Create teacher
 exports.createTeacher = async (req, res) => {
   try {
-    const { name, email, password, department, designation } = req.body;
+    const {
+      name,
+      email,
+      password,
+      department,
+      designation,
+      status,
+    } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -65,9 +75,18 @@ exports.createTeacher = async (req, res) => {
       });
     }
 
+    if (status && !["active", "inactive"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid teacher status",
+      });
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existingUser = await User.findOne({ email: normalizedEmail });
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (existingUser) {
       return res.status(409).json({
@@ -84,6 +103,7 @@ exports.createTeacher = async (req, res) => {
       password: hashedPassword,
       department,
       designation,
+      status: status || "active",
       role: "teacher",
     });
 
@@ -96,6 +116,7 @@ exports.createTeacher = async (req, res) => {
         email: teacher.email,
         department: teacher.department,
         designation: teacher.designation,
+        status: teacher.status,
         role: teacher.role,
       },
     });
@@ -110,7 +131,14 @@ exports.createTeacher = async (req, res) => {
 // Update teacher
 exports.updateTeacher = async (req, res) => {
   try {
-    const { name, email, password, department, designation } = req.body;
+    const {
+      name,
+      email,
+      password,
+      department,
+      designation,
+      status,
+    } = req.body;
 
     const teacher = await User.findOne({
       _id: req.params.id,
@@ -124,7 +152,16 @@ exports.updateTeacher = async (req, res) => {
       });
     }
 
-    if (name !== undefined) teacher.name = name;
+    if (status !== undefined && !["active", "inactive"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid teacher status",
+      });
+    }
+
+    if (name !== undefined) {
+      teacher.name = name;
+    }
 
     if (email !== undefined) {
       const normalizedEmail = email.trim().toLowerCase();
@@ -152,6 +189,10 @@ exports.updateTeacher = async (req, res) => {
       teacher.designation = designation;
     }
 
+    if (status !== undefined) {
+      teacher.status = status;
+    }
+
     if (password) {
       if (password.length < 6) {
         return res.status(400).json({
@@ -174,6 +215,7 @@ exports.updateTeacher = async (req, res) => {
         email: teacher.email,
         department: teacher.department,
         designation: teacher.designation,
+        status: teacher.status,
         role: teacher.role,
       },
     });
@@ -216,7 +258,11 @@ exports.deleteTeacher = async (req, res) => {
 exports.getMonthlyEnrollment = async (req, res) => {
   try {
     const enrollment = await User.aggregate([
-      { $match: { role: "teacher" } },
+      {
+        $match: {
+          role: "teacher",
+        },
+      },
       {
         $group: {
           _id: {
@@ -226,7 +272,12 @@ exports.getMonthlyEnrollment = async (req, res) => {
           totalTeachers: { $sum: 1 },
         },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.month": 1,
+        },
+      },
     ]);
 
     res.json({
