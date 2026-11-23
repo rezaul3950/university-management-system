@@ -1,6 +1,7 @@
 
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const { createActivity } = require("./activityController");
 
 // Get all teachers
 exports.getAllTeachers = async (req, res) => {
@@ -107,6 +108,14 @@ exports.createTeacher = async (req, res) => {
       role: "teacher",
     });
 
+    await createActivity({
+      action: "created",
+      entityType: "Teacher",
+      entityName: teacher.name,
+      description: `Teacher "${teacher.name}" was added`,
+      user: req.user,
+    });
+
     res.status(201).json({
       success: true,
       message: "Teacher created successfully",
@@ -206,6 +215,14 @@ exports.updateTeacher = async (req, res) => {
 
     await teacher.save();
 
+    await createActivity({
+      action: "updated",
+      entityType: "Teacher",
+      entityName: teacher.name,
+      description: `Teacher "${teacher.name}" was updated`,
+      user: req.user,
+    });
+
     res.json({
       success: true,
       message: "Teacher updated successfully",
@@ -241,6 +258,14 @@ exports.deleteTeacher = async (req, res) => {
         message: "Teacher not found",
       });
     }
+
+    await createActivity({
+      action: "deleted",
+      entityType: "Teacher",
+      entityName: teacher.name,
+      description: `Teacher "${teacher.name}" was deleted`,
+      user: req.user,
+    });
 
     res.json({
       success: true,

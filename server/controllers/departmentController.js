@@ -1,4 +1,6 @@
+
 const Department = require("../models/Department");
+const { createActivity } = require("./activityController");
 
 // Get all departments
 exports.getAllDepartments = async (req, res) => {
@@ -58,6 +60,14 @@ exports.createDepartment = async (req, res) => {
       status,
     });
 
+    await createActivity({
+      action: "created",
+      entityType: "Department",
+      entityName: department.name,
+      description: `Department "${department.name}" was created`,
+      user: req.user,
+    });
+
     res.status(201).json({
       success: true,
       message: "Department created successfully",
@@ -90,6 +100,14 @@ exports.updateDepartment = async (req, res) => {
       });
     }
 
+    await createActivity({
+      action: "updated",
+      entityType: "Department",
+      entityName: department.name,
+      description: `Department "${department.name}" was updated`,
+      user: req.user,
+    });
+
     res.json({
       success: true,
       message: "Department updated successfully",
@@ -114,6 +132,14 @@ exports.deleteDepartment = async (req, res) => {
         message: "Department not found",
       });
     }
+
+    await createActivity({
+      action: "deleted",
+      entityType: "Department",
+      entityName: department.name,
+      description: `Department "${department.name}" was deleted`,
+      user: req.user,
+    });
 
     res.json({
       success: true,

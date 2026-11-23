@@ -12,6 +12,7 @@ const noticeRoutes = require("./routes/noticeRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
 const departmentRoutes = require("./routes/departmentRoutes");
+const activityRoutes = require("./routes/activityRoutes");
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/notices", noticeRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/teachers", teacherRoutes);
 app.use("/api/departments", departmentRoutes);
+app.use("/api/activities", activityRoutes);
 
 console.log("All API Routes Loaded Successfully!");
 

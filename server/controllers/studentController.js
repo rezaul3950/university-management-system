@@ -1,6 +1,7 @@
 
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const { createActivity } = require("./activityController");
 
 // Get all students with Search
 exports.getAllStudents = async (req, res) => {
@@ -47,10 +48,7 @@ exports.getStudentById = async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      student,
-    });
+    res.json({ success: true, student });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -110,6 +108,14 @@ exports.createStudent = async (req, res) => {
       department,
       semester,
       status: status || "active",
+    });
+
+    await createActivity({
+      action: "created",
+      entityType: "Student",
+      entityName: student.name,
+      description: `Student "${student.name}" was added`,
+      user: req.user,
     });
 
     res.status(201).json({
@@ -197,6 +203,14 @@ exports.updateStudent = async (req, res) => {
 
     await student.save();
 
+    await createActivity({
+      action: "updated",
+      entityType: "Student",
+      entityName: student.name,
+      description: `Student "${student.name}" was updated`,
+      user: req.user,
+    });
+
     res.json({
       success: true,
       message: "Student updated successfully",
@@ -233,6 +247,14 @@ exports.deleteStudent = async (req, res) => {
         message: "Student not found",
       });
     }
+
+    await createActivity({
+      action: "deleted",
+      entityType: "Student",
+      entityName: student.name,
+      description: `Student "${student.name}" was deleted`,
+      user: req.user,
+    });
 
     res.json({
       success: true,
