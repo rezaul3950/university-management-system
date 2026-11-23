@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PageHeader from "@/components/shared/PageHeader";
 
 import { studentService } from "@/features/students/services/studentService";
 import { teacherService } from "@/features/teachers/services/teacherService";
@@ -32,7 +31,7 @@ export default function AdminDashboard() {
   const [activityError, setActivityError] = useState("");
   const [activityRefreshKey, setActivityRefreshKey] = useState(0);
 
-  // Fetch dashboard statistics
+  // Fetch Dashboard Statistics
   useEffect(() => {
     let isMounted = true;
 
@@ -102,7 +101,7 @@ export default function AdminDashboard() {
     };
   }, [refreshKey]);
 
-  // Fetch recent activities
+  // Fetch Recent Activities
   useEffect(() => {
     let isMounted = true;
 
@@ -144,6 +143,7 @@ export default function AdminDashboard() {
     };
   }, [activityRefreshKey]);
 
+  // Statistics Cards
   const statCards = [
     {
       title: "Total Students",
@@ -183,6 +183,7 @@ export default function AdminDashboard() {
     },
   ];
 
+  // Quick Actions
   const quickActions = [
     {
       title: "Add Student",
@@ -227,49 +228,75 @@ export default function AdminDashboard() {
 
   const actionColors = {
     created: {
-      color: "#059669",
-      background: "#ecfdf5",
+      color: "#15803D",
+      background: "#DCFCE7",
+      border: "#BBF7D0",
     },
     updated: {
-      color: "#2563eb",
-      background: "#eff6ff",
+      color: "#1D4ED8",
+      background: "#DBEAFE",
+      border: "#BFDBFE",
     },
     deleted: {
-      color: "#dc2626",
-      background: "#fef2f2",
+      color: "#B91C1C",
+      background: "#FEE2E2",
+      border: "#FECACA",
     },
   };
 
   return (
     <div style={styles.page}>
-      <PageHeader
-        title="Admin Dashboard"
-        subtitle="University Management System Overview"
-      />
+
+      {/* Dashboard Header */}
+      <div style={styles.dashboardHeader}>
+        <div>
+          <div style={styles.breadcrumb}>
+            <span>University</span>
+            <span style={{ color: "#cbd5e1" }}> / </span>
+            <strong>Dashboard</strong>
+          </div>
+
+          <h1 style={styles.dashboardTitle}>
+            Admin Dashboard
+          </h1>
+
+          <p style={styles.dashboardSubtitle}>
+            University Management System Overview
+          </p>
+        </div>
+      </div>
 
       {/* Welcome Banner */}
       <div style={styles.welcomeBanner}>
-        <div>
+        <div style={styles.welcomeContent}>
           <span style={styles.welcomeLabel}>
+            <span style={styles.welcomeLabelDot} />
             ADMINISTRATION PANEL
           </span>
 
           <h2 style={styles.welcomeTitle}>
-            Welcome to Admin Dashboard 👋
+            Welcome back, Admin! 👋
           </h2>
 
           <p style={styles.welcomeText}>
             Manage your university activities, monitor academic
-            performance and keep everything organized.
+            performance and keep everything organized from one place.
           </p>
         </div>
 
-        <div style={styles.welcomeIcon}>🏛️</div>
+        <div style={styles.welcomeVisual}>
+          <div style={styles.welcomeVisualCircle}>🏛️</div>
+          <div style={styles.welcomeVisualSmall}>🎓</div>
+        </div>
       </div>
 
       {/* University Statistics */}
       <div style={styles.sectionHeader}>
         <div>
+          <div style={styles.sectionEyebrow}>
+            OVERVIEW
+          </div>
+
           <h3 style={styles.sectionTitle}>
             University Statistics
           </h3>
@@ -292,7 +319,8 @@ export default function AdminDashboard() {
             cursor: loading ? "not-allowed" : "pointer",
           }}
         >
-          ↻ {loading ? "Loading..." : "Refresh"}
+          <span style={{ fontSize: 16 }}>↻</span>
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -343,6 +371,10 @@ export default function AdminDashboard() {
       {/* Quick Actions */}
       <div style={styles.quickActionsSection}>
         <div>
+          <div style={styles.sectionEyebrow}>
+            SHORTCUTS
+          </div>
+
           <h3 style={styles.sectionTitle}>
             Quick Actions
           </h3>
@@ -390,11 +422,15 @@ export default function AdminDashboard() {
       <div style={styles.chartSection}>
         <div style={styles.sectionHeader}>
           <div>
-            <h3 style={styles.sectionTitle}>
+            <div style={styles.analyticsEyebrow}>
+              PERFORMANCE INSIGHTS
+            </div>
+
+            <h3 style={styles.analyticsTitle}>
               Enrollment Analytics
             </h3>
 
-            <p style={styles.sectionSubtitle}>
+            <p style={styles.analyticsSubtitle}>
               Monthly student and teacher registration
             </p>
           </div>
@@ -413,6 +449,10 @@ export default function AdminDashboard() {
             <div style={styles.activityMainIcon}>📋</div>
 
             <div>
+              <div style={styles.analyticsEyebrow}>
+                SYSTEM MONITORING
+              </div>
+
               <h3 style={styles.overviewTitle}>
                 Recent Activities
               </h3>
@@ -430,7 +470,7 @@ export default function AdminDashboard() {
             }
             disabled={activityLoading}
             style={{
-              ...styles.refreshButton,
+              ...styles.activityRefresh,
               opacity: activityLoading ? 0.6 : 1,
               cursor: activityLoading ? "not-allowed" : "pointer",
             }}
@@ -462,17 +502,15 @@ export default function AdminDashboard() {
             </h4>
 
             <p style={styles.emptyActivityText}>
-              Student, teacher, course and department
-              activities will appear here after you add,
-              update or delete records.
+              Student, teacher, course and department activities
+              will appear here after you add, update or delete records.
             </p>
           </div>
         ) : (
           <div style={styles.activityList}>
             {activities.map((activity) => {
               const actionStyle =
-                actionColors[activity.action] ||
-                actionColors.updated;
+                actionColors[activity.action] || actionColors.updated;
 
               return (
                 <div
@@ -494,7 +532,7 @@ export default function AdminDashboard() {
 
                     <div style={styles.activityMeta}>
                       <span>
-                        {activity.performedByName || "Admin"}
+                        Admin: {activity.performedByName || "Admin"}
                       </span>
 
                       <span>•</span>
@@ -518,6 +556,7 @@ export default function AdminDashboard() {
                       ...styles.actionBadge,
                       color: actionStyle.color,
                       background: actionStyle.background,
+                      border: `1px solid ${actionStyle.border}`,
                     }}
                   >
                     {activity.action}
@@ -529,7 +568,8 @@ export default function AdminDashboard() {
         )}
 
         <div style={styles.activityFooter}>
-          Keep your university records updated.
+          <span style={styles.footerDot} />
+          Your university records are being tracked
         </div>
       </div>
     </div>
@@ -540,112 +580,213 @@ const styles = {
   page: {
     display: "flex",
     flexDirection: "column",
-    gap: 22,
-    paddingBottom: 30,
+    gap: 25,
+    padding: 20,
+    paddingBottom: 35,
+    width: "100%",
+    background: "#EAF3FF",
+    minHeight: "100vh",
+    borderRadius: 16,
   },
 
-  welcomeBanner: {
-    background: "linear-gradient(120deg, #172554, #1d4ed8, #4f46e5)",
-    borderRadius: 16,
-    padding: 30,
-    color: "#ffffff",
+  dashboardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 20,
     flexWrap: "wrap",
-    boxShadow: "0 8px 25px rgba(37,99,235,0.15)",
+    padding: "5px 2px 12px",
+  },
+
+  breadcrumb: {
+    fontSize: 11,
+    color: "#94a3b8",
+    fontWeight: 600,
+    marginBottom: 9,
+  },
+
+  dashboardTitle: {
+    fontSize: 27,
+    fontWeight: 850,
+    color: "var(--color-text)",
+    margin: 0,
+    letterSpacing: "-0.8px",
+  },
+
+  dashboardSubtitle: {
+    fontSize: 12,
+    color: "var(--color-muted)",
+    margin: "7px 0 0",
+  },
+
+  welcomeBanner: {
+    position: "relative",
+    overflow: "hidden",
+    background: "linear-gradient(115deg, #101d3a 0%, #1e40af 55%, #4338ca 100%)",
+    borderRadius: 22,
+    padding: "34px 36px",
+    color: "#ffffff",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 24,
+    flexWrap: "wrap",
+    boxShadow: "0 14px 35px rgba(30,64,175,0.20)",
+    border: "1px solid rgba(255,255,255,0.12)",
+  },
+
+  welcomeContent: {
+    position: "relative",
+    zIndex: 1,
+    flex: 1,
   },
 
   welcomeLabel: {
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: 2,
-    opacity: 0.8,
+    display: "inline-flex",
+    alignItems: "center",
+    fontSize: 10,
+    fontWeight: 800,
+    letterSpacing: 2.5,
+    color: "#bfdbfe",
+    background: "rgba(255,255,255,0.10)",
+    padding: "8px 13px",
+    borderRadius: 20,
+  },
+
+  welcomeLabelDot: {
+    width: 7,
+    height: 7,
+    borderRadius: "50%",
+    background: "#4ade80",
+    display: "inline-block",
+    marginRight: 8,
   },
 
   welcomeTitle: {
-    fontSize: 25,
-    fontWeight: 700,
-    margin: "12px 0",
+    fontSize: 27,
+    fontWeight: 800,
+    margin: "16px 0 9px",
+    letterSpacing: "-0.8px",
+    color: "#ffffff",
   },
 
   welcomeText: {
     fontSize: 13,
-    lineHeight: 1.7,
-    opacity: 0.9,
+    lineHeight: 1.8,
+    color: "#dbeafe",
     maxWidth: 550,
     margin: 0,
   },
 
-  welcomeIcon: {
-    width: 90,
-    height: 90,
-    borderRadius: 20,
-    background: "rgba(255,255,255,0.15)",
+  welcomeVisual: {
+    position: "relative",
+    width: 110,
+    height: 100,
     display: "grid",
     placeItems: "center",
-    fontSize: 45,
+  },
+
+  welcomeVisualCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 25,
+    display: "grid",
+    placeItems: "center",
+    background: "rgba(255,255,255,0.13)",
+    border: "1px solid rgba(255,255,255,0.2)",
+    fontSize: 43,
+  },
+
+  welcomeVisualSmall: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    width: 35,
+    height: 35,
+    display: "grid",
+    placeItems: "center",
+    background: "#ffffff",
+    borderRadius: 11,
+    fontSize: 18,
+    boxShadow: "0 5px 15px rgba(0,0,0,0.15)",
   },
 
   sectionHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 12,
+    gap: 14,
     flexWrap: "wrap",
+    padding: "3px 2px",
+  },
+
+  sectionEyebrow: {
+    fontSize: 9,
+    fontWeight: 800,
+    color: "#2563eb",
+    letterSpacing: 1.7,
+    marginBottom: 6,
   },
 
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 700,
+    fontSize: 19,
+    fontWeight: 800,
     color: "var(--color-text)",
     margin: 0,
+    letterSpacing: "-0.5px",
   },
 
   sectionSubtitle: {
     fontSize: 12,
     color: "var(--color-muted)",
-    margin: "5px 0 0",
+    margin: "6px 0 0",
+    lineHeight: 1.6,
   },
 
   refreshButton: {
-    background: "#2563eb",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
     color: "#ffffff",
-    border: "none",
-    borderRadius: 8,
-    padding: "9px 15px",
+    border: "1px solid #3b82f6",
+    borderRadius: 10,
+    padding: "10px 17px",
     fontSize: 12,
-    fontWeight: 600,
+    fontWeight: 750,
     cursor: "pointer",
+    boxShadow: "0 5px 13px rgba(37,99,235,0.20)",
   },
 
   errorBox: {
     background: "#fef2f2",
     color: "#b91c1c",
     border: "1px solid #fecaca",
-    borderRadius: 9,
-    padding: 13,
+    borderRadius: 12,
+    padding: 14,
     fontSize: 13,
   },
 
   statsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
-    gap: 17,
+    gap: 18,
   },
 
   statCard: {
-    background: "var(--color-surface)",
-    border: "1px solid var(--color-border)",
-    borderRadius: 14,
-    padding: 20,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.035)",
+    position: "relative",
+    overflow: "hidden",
+    background: "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
+    border: "1px solid #e2e8f0",
+    borderRadius: 19,
+    padding: "22px 21px",
+    boxShadow: "0 5px 20px rgba(15,23,42,0.045)",
     textAlign: "left",
     width: "100%",
     cursor: "pointer",
-    color: "inherit",
+    color: "#0f172a",
     fontFamily: "inherit",
+    transition: "all 0.25s ease",
   },
 
   statTop: {
@@ -655,130 +796,183 @@ const styles = {
   },
 
   statIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     display: "grid",
     placeItems: "center",
-    fontSize: 23,
+    fontSize: 25,
+    boxShadow: "0 5px 13px rgba(15,23,42,0.06)",
   },
 
   statArrow: {
-    fontSize: 20,
-    color: "var(--color-muted)",
+    width: 31,
+    height: 31,
+    borderRadius: 10,
+    background: "#f1f5f9",
+    display: "grid",
+    placeItems: "center",
+    fontSize: 17,
+    color: "#64748b",
   },
 
   statValue: {
-    fontSize: 30,
-    fontWeight: 700,
-    color: "var(--color-text)",
-    margin: "18px 0 4px",
+    fontSize: 36,
+    fontWeight: 850,
+    color: "#0f172a",
+    margin: "21px 0 5px",
+    letterSpacing: "-1.5px",
   },
 
   statTitle: {
     fontSize: 14,
-    fontWeight: 600,
-    color: "var(--color-text)",
-    margin: "0 0 5px",
+    fontWeight: 750,
+    color: "#334155",
+    margin: "0 0 7px",
   },
 
   statDescription: {
-    fontSize: 12,
-    color: "var(--color-muted)",
+    fontSize: 11,
+    color: "#94a3b8",
+    fontWeight: 500,
   },
 
   quickActionsSection: {
     display: "flex",
     flexDirection: "column",
-    gap: 15,
+    gap: 17,
   },
 
   quickActionsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 15,
+    gap: 16,
   },
 
   quickActionCard: {
     display: "flex",
     alignItems: "center",
-    gap: 13,
-    padding: 18,
-    background: "var(--color-surface)",
-    border: "1px solid var(--color-border)",
-    borderRadius: 13,
+    gap: 14,
+    padding: "19px 17px",
+    background: "linear-gradient(145deg, #ffffff, #f8fafc)",
+    border: "1px solid #e2e8f0",
+    borderRadius: 17,
     cursor: "pointer",
     textAlign: "left",
     width: "100%",
-    transition: "all 0.2s ease",
+    boxShadow: "0 5px 17px rgba(15,23,42,0.045)",
+    transition: "all 0.25s ease",
   },
 
   quickActionIcon: {
-    width: 46,
-    height: 46,
-    minWidth: 46,
-    borderRadius: 12,
+    width: 49,
+    height: 49,
+    minWidth: 49,
+    borderRadius: 15,
     display: "grid",
     placeItems: "center",
-    fontSize: 23,
+    fontSize: 24,
+    boxShadow: "0 4px 12px rgba(15,23,42,0.055)",
   },
 
   quickActionTitle: {
     display: "block",
-    color: "var(--color-text)",
-    fontSize: 14,
-    fontWeight: 700,
+    color: "#0f172a",
+    fontSize: 13,
+    fontWeight: 800,
+    letterSpacing: "-0.2px",
   },
 
   quickActionDescription: {
-    color: "var(--color-muted)",
+    color: "#94a3b8",
     fontSize: 11,
-    margin: "5px 0 0",
+    margin: "6px 0 0",
+    lineHeight: 1.5,
   },
 
   quickActionArrow: {
-    fontSize: 21,
-    color: "var(--color-muted)",
+    fontSize: 22,
+    color: "#64748b",
+    marginLeft: "auto",
+    fontWeight: 600,
   },
 
   chartSection: {
     display: "flex",
     flexDirection: "column",
-    gap: 16,
+    gap: 19,
+    padding: 23,
+    borderRadius: 21,
+    background: "linear-gradient(145deg, #F8FAFF 0%, #EEF4FF 100%)",
+    border: "1px solid #DBEAFE",
+    boxShadow: "0 8px 24px rgba(37,99,235,0.06)",
+  },
+
+  analyticsEyebrow: {
+    fontSize: 9,
+    fontWeight: 800,
+    color: "#2563EB",
+    letterSpacing: 1.7,
+    marginBottom: 6,
+  },
+
+  analyticsTitle: {
+    fontSize: 19,
+    fontWeight: 800,
+    color: "#172554",
+    margin: 0,
+    letterSpacing: "-0.5px",
+  },
+
+  analyticsSubtitle: {
+    fontSize: 12,
+    color: "#526783",
+    margin: "6px 0 0",
+    lineHeight: 1.6,
   },
 
   analyticsIcon: {
-    fontSize: 27,
+    width: 45,
+    height: 45,
+    display: "grid",
+    placeItems: "center",
+    borderRadius: 14,
+    background: "#D2E3F8",
+    border: "1px solid #B8D0EF",
+    fontSize: 23,
   },
 
+  // Recent Activities - Medium Soft Blue
   activityCard: {
-    background: "var(--color-surface)",
-    border: "1px solid var(--color-border)",
-    borderRadius: 14,
+    background: "linear-gradient(145deg, #E2ECFA, #DCE8F7)",
+    border: "1px solid #C7D8EE",
+    borderRadius: 21,
     padding: 23,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.035)",
+    boxShadow: "0 5px 15px rgba(37,99,235,0.07)",
+    color: "#172554",
   },
 
   activityHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 12,
+    gap: 14,
     flexWrap: "wrap",
-    marginBottom: 20,
+    marginBottom: 21,
   },
 
   activityHeading: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
+    gap: 13,
   },
 
   activityMainIcon: {
-    width: 45,
-    height: 45,
-    background: "#eff6ff",
-    borderRadius: 11,
+    width: 46,
+    height: 46,
+    background: "#D2E3F8",
+    border: "1px solid #B8D0EF",
+    borderRadius: 14,
     display: "grid",
     placeItems: "center",
     fontSize: 22,
@@ -786,75 +980,58 @@ const styles = {
 
   overviewTitle: {
     fontSize: 17,
-    fontWeight: 700,
-    color: "var(--color-text)",
+    fontWeight: 800,
+    color: "#172554",
     margin: 0,
+    letterSpacing: "-0.3px",
   },
 
   overviewSubtitle: {
-    fontSize: 12,
-    color: "var(--color-muted)",
-    margin: "5px 0 0",
+    fontSize: 11,
+    color: "#526783",
+    margin: "6px 0 0",
   },
 
-  emptyActivity: {
-    textAlign: "center",
-    padding: "35px 15px",
-    background: "var(--color-background)",
-    border: "1px dashed var(--color-border)",
-    borderRadius: 12,
-  },
-
-  emptyActivityIcon: {
-    fontSize: 35,
-    marginBottom: 12,
-  },
-
-  emptyActivityTitle: {
-    fontSize: 15,
+  activityRefresh: {
+    background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+    color: "#ffffff",
+    border: "1px solid #3b82f6",
+    borderRadius: 10,
+    padding: "9px 14px",
+    fontSize: 11,
     fontWeight: 700,
-    color: "var(--color-text)",
-    margin: "0 0 8px",
-  },
-
-  emptyActivityText: {
-    fontSize: 12,
-    lineHeight: 1.7,
-    color: "var(--color-muted)",
-    maxWidth: 450,
-    margin: "0 auto",
-  },
-
-  activityFooter: {
-    borderTop: "1px solid var(--color-border)",
-    paddingTop: 15,
-    marginTop: 18,
-    color: "var(--color-muted)",
-    fontSize: 12,
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(37,99,235,0.16)",
   },
 
   activityList: {
     display: "flex",
     flexDirection: "column",
-    gap: 12,
+    gap: 11,
+    maxHeight: 420,
+    overflowY: "auto",
+    padding: "2px 5px 2px 0",
   },
 
   activityItem: {
     display: "flex",
     alignItems: "center",
-    gap: 13,
-    padding: 14,
-    border: "1px solid var(--color-border)",
-    borderRadius: 11,
-    background: "var(--color-background)",
+    gap: 14,
+    padding: "15px 15px",
+    border: "1px solid #D0DFF0",
+    borderRadius: 14,
+    background: "linear-gradient(110deg, #F1F6FD, #EAF2FC)",
+    transition: "all 0.2s ease",
+    minWidth: 0,
   },
 
   activityEntityIcon: {
     width: 43,
     height: 43,
     minWidth: 43,
-    borderRadius: 11,
-    background: "#eff6ff",
+    borderRadius: 13,
+    background: "#DCE9F9",
+    border: "1px solid #C4D8F0",
     display: "grid",
     placeItems: "center",
     fontSize: 21,
@@ -867,39 +1044,90 @@ const styles = {
 
   activityName: {
     fontSize: 13,
-    fontWeight: 700,
-    color: "var(--color-text)",
+    fontWeight: 800,
+    color: "#172554",
+    marginBottom: 2,
   },
 
   activityDescription: {
-    fontSize: 12,
-    color: "var(--color-muted)",
-    margin: "5px 0",
+    fontSize: 11,
+    color: "#334B6B",
+    margin: "5px 0 7px",
+    lineHeight: 1.6,
   },
 
   activityMeta: {
     display: "flex",
     flexWrap: "wrap",
-    gap: 7,
+    gap: 8,
     fontSize: 10,
-    color: "var(--color-muted)",
+    color: "#647B98",
   },
 
   actionBadge: {
-    padding: "6px 10px",
+    padding: "6px 11px",
     borderRadius: 20,
     fontSize: 10,
-    fontWeight: 700,
+    fontWeight: 800,
     textTransform: "capitalize",
+    flexShrink: 0,
+    letterSpacing: "0.2px",
+  },
+
+  emptyActivity: {
+    textAlign: "center",
+    padding: "38px 18px",
+    background: "#F1F6FD",
+    border: "1px dashed #B8D0EF",
+    borderRadius: 15,
+  },
+
+  emptyActivityIcon: {
+    fontSize: 34,
+    marginBottom: 12,
+  },
+
+  emptyActivityTitle: {
+    fontSize: 15,
+    fontWeight: 800,
+    color: "#172554",
+    margin: "0 0 9px",
+  },
+
+  emptyActivityText: {
+    fontSize: 11,
+    lineHeight: 1.8,
+    color: "#647B98",
+    maxWidth: 420,
+    margin: "0 auto",
+  },
+
+  activityFooter: {
+    display: "flex",
+    alignItems: "center",
+    gap: 9,
+    borderTop: "1px solid #C7D8EE",
+    paddingTop: 15,
+    marginTop: 18,
+    color: "#526783",
+    fontSize: 10,
+  },
+
+  footerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    background: "#22c55e",
+    boxShadow: "0 0 10px rgba(34,197,94,0.3)",
   },
 
   activityError: {
-    background: "#fef2f2",
-    color: "#b91c1c",
-    border: "1px solid #fecaca",
-    borderRadius: 9,
+    background: "#FEE2E2",
+    color: "#B91C1C",
+    border: "1px solid #FECACA",
+    borderRadius: 10,
     padding: 12,
-    fontSize: 12,
+    fontSize: 11,
     marginBottom: 12,
   },
 };
