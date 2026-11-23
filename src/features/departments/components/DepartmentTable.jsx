@@ -1,7 +1,12 @@
 
 import Table from "@/components/ui/Table";
 
-export default function DepartmentTable({ items, onEdit, onDelete }) {
+export default function DepartmentTable({
+  items,
+  onEdit,
+  onDelete,
+  onView,
+}) {
   const columns = [
     {
       key: "name",
@@ -35,7 +40,14 @@ export default function DepartmentTable({ items, onEdit, onDelete }) {
       key: "actions",
       header: "Actions",
       render: (item) => (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => onView(item)}
+            className="px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-700"
+          >
+            View
+          </button>
+
           <button
             onClick={() => onEdit(item)}
             className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
