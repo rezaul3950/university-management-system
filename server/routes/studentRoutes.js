@@ -14,18 +14,33 @@ const {
   getMonthlyEnrollment,
 } = require("../controllers/studentController");
 
-// Admin only
-router.use(authMiddleware, roleMiddleware("admin"));
+// Login required for all routes
+router.use(authMiddleware);
 
-// Student routes
-router.get("/", getAllStudents);
+// Admin and Teacher can view students
+router.get(
+  "/",
+  roleMiddleware("admin", "teacher"),
+  getAllStudents
+);
 
-// Monthly enrollment route (must be before /:id)
-router.get("/enrollment/monthly", getMonthlyEnrollment);
+// Admin only: Monthly enrollment
+router.get(
+  "/enrollment/monthly",
+  roleMiddleware("admin"),
+  getMonthlyEnrollment
+);
 
-router.get("/:id", getStudentById);
-router.post("/", createStudent);
-router.put("/:id", updateStudent);
-router.delete("/:id", deleteStudent);
+// Admin and Teacher can view individual student
+router.get(
+  "/:id",
+  roleMiddleware("admin", "teacher"),
+  getStudentById
+);
+
+// Admin only: Student management
+router.post("/", roleMiddleware("admin"), createStudent);
+router.put("/:id", roleMiddleware("admin"), updateStudent);
+router.delete("/:id", roleMiddleware("admin"), deleteStudent);
 
 module.exports = router;

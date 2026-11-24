@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
     email: {
       type: String,
       required: true,
@@ -15,40 +16,55 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
     password: {
       type: String,
       required: true,
     },
+
     role: {
       type: String,
       enum: ["admin", "teacher", "student"],
       default: "student",
     },
+
     studentId: {
       type: String,
       default: "",
       trim: true,
     },
+
     department: {
       type: String,
       trim: true,
       default: "",
     },
+
     semester: {
       type: String,
       default: "",
       trim: true,
     },
+
     status: {
       type: String,
       enum: ["active", "inactive"],
       default: "active",
     },
+
     designation: {
       type: String,
       trim: true,
       default: "",
     },
+
+    // Courses assigned to this student
+    courses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
+    ],
   },
   { timestamps: true }
 );

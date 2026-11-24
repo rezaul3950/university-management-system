@@ -4,6 +4,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import Loader from "@/components/ui/Loader";
 import StudentTable from "../components/StudentTable";
 import { studentService } from "../services/studentService";
+import { courseService } from "@/features/courses/services/courseService";
 
 const initialForm = {
   studentId: "",
@@ -13,10 +14,12 @@ const initialForm = {
   department: "",
   semester: "",
   status: "active",
+  courses: [],
 };
 
 export default function StudentListPage() {
   const [items, setItems] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -31,7 +34,6 @@ export default function StudentListPage() {
   const loadStudents = async () => {
     try {
       setError("");
-
       const response = await studentService.getAll();
 
       setItems(
@@ -46,8 +48,27 @@ export default function StudentListPage() {
     }
   };
 
+  // Load Courses
+  const loadCourses = async () => {
+    try {
+      const response = await courseService.getAll();
+
+      const courseList =
+        response?.data?.data ??
+        response?.data ??
+        response ??
+        [];
+
+      setCourses(Array.isArray(courseList) ? courseList : []);
+    } catch (err) {
+      console.error("Failed to load courses:", err);
+      setCourses([]);
+    }
+  };
+
   useEffect(() => {
     loadStudents();
+    loadCourses();
   }, []);
 
   // Statistics
@@ -89,6 +110,20 @@ export default function StudentListPage() {
     });
   };
 
+  // Course Selection
+  const handleCourseChange = (courseId) => {
+    setForm((prev) => {
+      const selected = prev.courses.includes(courseId);
+
+      return {
+        ...prev,
+        courses: selected
+          ? prev.courses.filter((id) => id !== courseId)
+          : [...prev.courses, courseId],
+      };
+    });
+  };
+
   // Add / Update Student
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,6 +138,7 @@ export default function StudentListPage() {
         department: form.department.trim(),
         semester: form.semester.trim(),
         status: form.status,
+        courses: form.courses,
       };
 
       if (form.password) {
@@ -139,6 +175,11 @@ export default function StudentListPage() {
       department: student.department || "",
       semester: student.semester || "",
       status: student.status || "active",
+      courses: Array.isArray(student.courses)
+        ? student.courses.map((course) =>
+            typeof course === "object" ? course._id : course
+          )
+        : [],
     });
 
     setEditingId(student._id);
@@ -197,6 +238,7 @@ export default function StudentListPage() {
     borderRadius: "7px",
     fontSize: "14px",
     backgroundColor: "var(--color-card, #ffffff)",
+    color: "var(--color-text, inherit)",
   };
 
   // Primary Button
@@ -224,7 +266,7 @@ export default function StudentListPage() {
     <>
       <PageHeader
         title="Students"
-        subtitle="Manage all university students"
+        subtitle="Manage students and their enrolled courses"
       />
 
       {/* Statistics */}
@@ -304,7 +346,7 @@ export default function StudentListPage() {
           style={{
             display: "grid",
             gap: "14px",
-            maxWidth: "500px",
+            maxWidth: "550px",
             padding: "22px",
             marginBottom: "25px",
             border: "1px solid var(--color-border, #e5e7eb)",
@@ -376,6 +418,79 @@ export default function StudentListPage() {
             style={inputStyle}
             required
           />
+
+          {/* Course Selection */}
+          <div
+            style={{
+              border: "1px solid var(--color-border, #d1d5db)",
+              borderRadius: "9px",
+              padding: "14px",
+            }}
+          >
+            <h4 style={{ margin: "0 0 5px" }}>
+              Enrolled Courses
+            </h4>
+
+            <p
+              style={{
+                color: "#64748b",
+                fontSize: "13px",
+                margin: "0 0 12px",
+              }}
+            >
+              Select all courses this student is enrolled in.
+            </p>
+
+            {courses.length === 0 ? (
+              <p style={{ color: "#b91c1c", fontSize: "14px" }}>
+                No courses found. Please create a course first.
+              </p>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gap: "10px",
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                }}
+              >
+                {courses.map((course) => (
+                  <label
+                    key={course._id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "9px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={form.courses.includes(course._id)}
+                      onChange={() => handleCourseChange(course._id)}
+                    />
+
+                    <span>
+                      <strong>{course.code}</strong>
+                      {" - "}
+                      {course.title}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <p
+              style={{
+                fontSize: "13px",
+                color: "#2563eb",
+                margin: "12px 0 0",
+              }}
+            >
+              {form.courses.length} course(s) selected
+            </p>
+          </div>
 
           <select
             name="status"
@@ -497,6 +612,8 @@ export default function StudentListPage() {
               borderRadius: "14px",
               backgroundColor: "var(--color-card, #ffffff)",
               boxShadow: "0 15px 40px rgba(0,0,0,0.2)",
+              maxHeight: "85vh",
+              overflowY: "auto",
             }}
           >
             <div
@@ -545,6 +662,28 @@ export default function StudentListPage() {
               <strong>Status:</strong>{" "}
               {viewingStudent.status || "active"}
             </p>
+
+            <div style={{ margin: "16px 0" }}>
+              <strong>Enrolled Courses:</strong>
+
+              {Array.isArray(viewingStudent.courses) &&
+              viewingStudent.courses.length > 0 ? (
+                <ul style={{ paddingLeft: "22px" }}>
+                  {viewingStudent.courses.map((course, index) => (
+                    <li key={course._id || index}>
+                      {typeof course === "object"
+                        ? `${course.code || ""} - ${course.title || ""}`
+                        : course}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ color: "#64748b" }}>
+                  No courses assigned.
+                </p>
+              )}
+            </div>
+
             <p>
               <strong>Created:</strong>{" "}
               {viewingStudent.createdAt

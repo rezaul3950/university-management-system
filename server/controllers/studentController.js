@@ -3,7 +3,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { createActivity } = require("./activityController");
 
-// Get all students with Search
+// Get all students with Search and Courses
 exports.getAllStudents = async (req, res) => {
   try {
     const search = req.query.search || "";
@@ -18,6 +18,7 @@ exports.getAllStudents = async (req, res) => {
       ],
     })
       .select("-password")
+      .populate("courses", "code title")
       .sort({ createdAt: -1 });
 
     res.json({
@@ -39,7 +40,9 @@ exports.getStudentById = async (req, res) => {
     const student = await User.findOne({
       _id: req.params.id,
       role: "student",
-    }).select("-password");
+    })
+      .select("-password")
+      .populate("courses", "code title");
 
     if (!student) {
       return res.status(404).json({
@@ -68,6 +71,7 @@ exports.createStudent = async (req, res) => {
       department,
       semester,
       status,
+      courses,
     } = req.body;
 
     if (!name || !email || !password) {
@@ -108,6 +112,7 @@ exports.createStudent = async (req, res) => {
       department,
       semester,
       status: status || "active",
+      courses: Array.isArray(courses) ? courses : [],
     });
 
     await createActivity({
@@ -118,19 +123,14 @@ exports.createStudent = async (req, res) => {
       user: req.user,
     });
 
+    const savedStudent = await User.findById(student._id)
+      .select("-password")
+      .populate("courses", "code title");
+
     res.status(201).json({
       success: true,
       message: "Student created successfully",
-      student: {
-        id: student._id,
-        studentId: student.studentId,
-        name: student.name,
-        email: student.email,
-        department: student.department,
-        semester: student.semester,
-        status: student.status,
-        role: student.role,
-      },
+      student: savedStudent,
     });
   } catch (error) {
     res.status(500).json({
@@ -151,6 +151,7 @@ exports.updateStudent = async (req, res) => {
       department,
       semester,
       status,
+      courses,
     } = req.body;
 
     const student = await User.findOne({
@@ -190,6 +191,10 @@ exports.updateStudent = async (req, res) => {
     if (semester !== undefined) student.semester = semester;
     if (status !== undefined) student.status = status;
 
+    if (Array.isArray(courses)) {
+      student.courses = courses;
+    }
+
     if (password) {
       if (password.length < 6) {
         return res.status(400).json({
@@ -211,19 +216,14 @@ exports.updateStudent = async (req, res) => {
       user: req.user,
     });
 
+    const updatedStudent = await User.findById(student._id)
+      .select("-password")
+      .populate("courses", "code title");
+
     res.json({
       success: true,
       message: "Student updated successfully",
-      student: {
-        id: student._id,
-        studentId: student.studentId,
-        name: student.name,
-        email: student.email,
-        department: student.department,
-        semester: student.semester,
-        status: student.status,
-        role: student.role,
-      },
+      student: updatedStudent,
     });
   } catch (error) {
     res.status(500).json({
